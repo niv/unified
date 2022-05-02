@@ -83,6 +83,11 @@ void NWNX_PushArgumentJson(json value)
     SetLocalJson(OBJECT_INVALID, NWNX_PUSH, value);
 }
 
+void NWNX_PushArgumentSqlQuery(sqlquery value)
+{
+    SqlBindString(value, NWNX_PUSH, NWNX_PUSH);
+}
+
 int NWNX_GetReturnValueInt()
 {
     return GetLocalInt(OBJECT_INVALID, NWNX_POP);
@@ -118,4 +123,9 @@ itemproperty NWNX_GetReturnValueItemProperty()
 json NWNX_GetReturnValueJson()
 {
     return GetLocalJson(OBJECT_INVALID, NWNX_POP);
+}
+
+sqlquery NWNX_GetReturnValueSqlQuery()
+{
+    return SqlPrepareQueryObject(OBJECT_INVALID, NWNX_POP);
 }

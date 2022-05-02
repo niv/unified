@@ -3,6 +3,7 @@
 #include "nwnx.hpp"
 #include "API/API/CGameEffect.hpp"
 #include "API/API/JsonEngineStructure.hpp"
+#include "API/API/SqlQueryEngineStructure.hpp"
 
 #include <deque>
 #include <stdexcept>
@@ -25,6 +26,7 @@ constexpr bool is_argument_type()
         || std::is_same_v<T, std::string>
         || std::is_same_v<T, CGameEffect*>
         || std::is_same_v<T, JsonEngineStructure>
+        || std::is_same_v<T, SqlQueryEngineStructure>
         || std::is_same_v<T, NullArgument>);
 }
 
@@ -32,7 +34,7 @@ constexpr bool is_argument_type()
 
 struct ScriptVariant
 {
-    using Variant = std::variant<NullArgument, int32_t, float, ObjectID, std::string, CGameEffect*, JsonEngineStructure>;
+    using Variant = std::variant<NullArgument, int32_t, float, ObjectID, std::string, CGameEffect*, JsonEngineStructure, SqlQueryEngineStructure>;
     Variant m_data;
 
     // Constructors
@@ -78,6 +80,11 @@ struct ScriptVariant
             return e ? std::string("EffectID:") + std::to_string(e->m_nID) : std::string("nullptr effect");
         }
         else if (Holds<JsonEngineStructure>()) { return std::string("JSON: ") + Get<JsonEngineStructure>().m_json.dump(); }
+        else if (Holds<SqlQueryEngineStructure>())
+        {
+            auto* shr = Get<SqlQueryEngineStructure>().m_shared.get();
+            return std::string("SQL: ") + shr->m_query.CStr();
+        }
         return "(unknown argument type)";
     }
 

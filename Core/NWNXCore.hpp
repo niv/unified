@@ -21,6 +21,8 @@ public:
     static int32_t TagEffectHandler(CNWVirtualMachineCommands*, int32_t, int32_t);
     static int32_t TagItemPropertyHandler(CNWVirtualMachineCommands*, int32_t, int32_t);
     static int32_t PlaySoundHandler(CNWVirtualMachineCommands*, int32_t, int32_t);
+    static int32_t SqlBindHandler(CNWVirtualMachineCommands*, int32_t, int32_t);
+    static int32_t SqlPrepareHandler(CNWVirtualMachineCommands*, int32_t, int32_t);
 
     std::unique_ptr<NWNXLib::Services::ServiceList> m_services;
 
@@ -34,6 +36,8 @@ private:
     NWNXLib::Hooks::Hook m_vmTagEffectHook;
     NWNXLib::Hooks::Hook m_vmTagItemProperyHook;
     NWNXLib::Hooks::Hook m_vmPlaySoundHook;
+    NWNXLib::Hooks::Hook m_vmSqlBindHook;
+    NWNXLib::Hooks::Hook m_vmSqlPrepareHook;
     NWNXLib::Hooks::Hook m_destroyServerHook;
     NWNXLib::Hooks::Hook m_mainLoopInternalHook;
 

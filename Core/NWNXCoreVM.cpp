@@ -1,3 +1,5 @@
+#include "Constants/VirtualMachine.hpp"
+#include "nwn_api.hpp"
 #include "nwnx.hpp"
 #include "NWNXCore.hpp"
 
@@ -11,6 +13,7 @@
 #include "API/CScriptLocation.hpp"
 #include "API/CVirtualMachine.hpp"
 #include "API/CGameEffect.hpp"
+#include "API/SqlQueryEngineStructure.hpp"
 #include "API/CNWVirtualMachineCommands.hpp"
 #include "API/CNWSObject.hpp"
 
@@ -458,5 +461,102 @@ int32_t NWNXCore::PlaySoundHandler(CNWVirtualMachineCommands* thisPtr, int32_t n
     return VMError::Success;
 }
 
+int32_t NWNXCore::SqlBindHandler(CNWVirtualMachineCommands* thisPtr, int32_t nCommandId, int32_t nParameters)
+{
+    if (nCommandId == VMCommand::SqlBindString)
+    {
+        auto *vm = Globals::VirtualMachine();
+
+        SqlQueryEngineStructure* sql;
+        if (!vm->StackPopEngineStructure(VMStructure::SQLQuery, (void**) &sql))
+            return VMError::StackUnderflow;
+        
+        bool bSkipDelete = false;
+        SCOPEGUARD(if (!bSkipDelete) { delete sql; });
+
+        CExoString bind;
+        if (!vm->StackPopString(&bind))
+            return VMError::StackUnderflow;
+
+        CExoString value;
+        if (!vm->StackPopString(&value))
+            return VMError::StackUnderflow;
+
+        auto nwnx = ProcessNWNX(bind);
+
+        if (nwnx)
+        {
+            if (nwnx->operation == "PUSH")
+            {
+                Events::Push(*sql);
+                bSkipDelete = true;
+            }
+            else ASSERT_FAIL_MSG("Invalid operation on SqlBindHandler: Only PUSH allowed");
+
+            return VMError::Success;
+        }
+        else
+        {
+            if (!vm->StackPushString(value))
+                return VMError::StackOverflow;
+
+            if (!vm->StackPushString(bind))
+                return VMError::StackOverflow;
+
+            if (!vm->StackPushEngineStructure(VMStructure::SQLQuery, sql))
+                return VMError::StackOverflow;
+
+            bSkipDelete = true;
+
+            // Fall through to original
+        }
+    }
+
+    return g_core->m_vmSqlBindHook->CallOriginal<int32_t>(thisPtr, nCommandId, nParameters);
+}
+
+int32_t NWNXCore::SqlPrepareHandler(CNWVirtualMachineCommands* thisPtr, int32_t nCommandId, int32_t nParameters)
+{
+    if (nCommandId == VMCommand::SqlPrepareQueryObj)
+    {
+        auto *vm = Globals::VirtualMachine();
+
+        ObjectID obj;
+        if (!vm->StackPopObject(&obj))
+            return VMError::StackUnderflow;
+        
+        CExoString value;
+        if (!vm->StackPopString(&value))
+            return VMError::StackUnderflow;
+
+        auto nwnx = ProcessNWNX(value);
+
+        if (nwnx)
+        {
+            if (nwnx->operation == "POP")
+            {
+                SqlQueryEngineStructure sql;
+                sql = Events::Pop<SqlQueryEngineStructure>().value_or(sql);
+                if (!vm->StackPushEngineStructure(VMStructure::SQLQuery, &sql))
+                    return VMError::StackOverflow;
+            }
+            else ASSERT_FAIL_MSG("Invalid operation on SqlPrepareHandler: Only POP allowed");
+
+            return VMError::Success;
+        }
+        else
+        {
+            if (!vm->StackPushString(value))
+                return VMError::StackOverflow;
+
+            if (!vm->StackPushObject(obj))
+                return VMError::StackOverflow;
+
+            // Fall through to original
+        }
+    }
+
+    return g_core->m_vmSqlPrepareHook->CallOriginal<int32_t>(thisPtr, nCommandId, nParameters);
+}
 
 }

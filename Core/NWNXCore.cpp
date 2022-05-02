@@ -179,6 +179,9 @@ void NWNXCore::InitialSetupHooks()
     m_vmTagEffectHook      = Hooks::HookFunction(API::Functions::_ZN25CNWVirtualMachineCommands23ExecuteCommandTagEffectEii, (void*)&TagEffectHandler, Hooks::Order::Final);
     m_vmTagItemProperyHook = Hooks::HookFunction(API::Functions::_ZN25CNWVirtualMachineCommands29ExecuteCommandTagItemPropertyEii, (void*)&TagItemPropertyHandler, Hooks::Order::Final);
     m_vmPlaySoundHook      = Hooks::HookFunction(API::Functions::_ZN25CNWVirtualMachineCommands23ExecuteCommandPlaySoundEii, (void*)&PlaySoundHandler, Hooks::Order::Final);
+    m_vmSqlBindHook        = Hooks::HookFunction(API::Functions::_ZN25CNWVirtualMachineCommands21ExecuteCommandSqlBindEii, (void*)&SqlBindHandler, Hooks::Order::Final);
+    m_vmSqlPrepareHook     = Hooks::HookFunction(API::Functions::_ZN25CNWVirtualMachineCommands24ExecuteCommandSqlPrepareEii, (void*)&SqlPrepareHandler, Hooks::Order::Final);
+    
 
     m_destroyServerHook    = Hooks::HookFunction(API::Functions::_ZN11CAppManager13DestroyServerEv, (void*)&DestroyServerHandler, Hooks::Order::Final);
     m_mainLoopInternalHook = Hooks::HookFunction(API::Functions::_ZN21CServerExoAppInternal8MainLoopEv, (void*)&MainLoopInternalHandler, Hooks::Order::Final);

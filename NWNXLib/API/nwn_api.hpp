@@ -143,3 +143,9 @@ namespace NWSQLite {
     void nwnxRemove(const std::string& key, const char *pn = PLUGIN_NAME);                                                  \
     void nwnxRemoveRegex(const std::string& regex, const char *pn = PLUGIN_NAME);                                           \
 
+template<typename T>
+struct SharedPtrEngineStructure
+{
+    std::shared_ptr<T> m_shared;
+    virtual ~SharedPtrEngineStructure() {}
+};
